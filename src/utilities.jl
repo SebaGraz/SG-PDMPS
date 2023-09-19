@@ -93,13 +93,11 @@ function AdamCV(∇U!, ∇Ufull, θ0, nobs, minibatch, epochs, args...; eps = 1e
     return CV(true, θ, ∇Ufull(θ, args...))
 end
 
-
+reshapetov(xx) = [xx[:, i] for i in 1:size(xx,2)]
 
 norm2(x) = dot(x,x)
 
 function stein_k(j, θ1, θ2, ∇θ1, ∇θ2, c::Float64, β::Float64)
-    # res1 = ∇θ1[j]*(β)(c^2 + norm2(θ1 - θ2))^(β-1)*2*(θ2[j] - θ1[j]) + ∇θ2[j]*(β)(c^2 + norm2(θ1 - θ2))^(β-1)*2*(θ1[j] - θ2[j]) + 
-    # res1 == 0 || error("res1 = $(res1)")
     res = ∇θ1[j]*∇θ2[j]*(c^2 + norm2(θ1 - θ2))^β + 
         2*β*(c^2 + norm2(θ1 - θ2))^(β-1)*(θ1[j] - θ2[j])*(∇θ2[j] - ∇θ1[j]) - 
         4*(β)*(β-1)*(c^2 + norm2(θ1 - θ2))^(β-2)*(θ1[j] - θ2[j])^2 - 
@@ -108,27 +106,25 @@ function stein_k(j, θ1, θ2, ∇θ1, ∇θ2, c::Float64, β::Float64)
 end
 
 
-
-function stein_metric(∇Uf, θθ, c, β, args...)
-    N = size(θθ, 2)
-    p = size(θθ, 1)
+function stein_kernel(∇U, xx, c::Float64, β::Float64, args...)
+    ∇Uxx = [∇U(x, args...) for x in xx]
     res = 0.0
-    ∇θθ = [∇Uf(θθ[:,i], args...) for i in 1:N]
+    n = length(xx)
+    p = length(xx[1])
     for j in 1:p
-        resj = 0.0
-        for i1 in 1:N
-            for i2 in 1:i1
-                if i1 == i2
-                    resj += stein_k(j, θθ[:, i1], θθ[:, i2], ∇θθ[i1], ∇θθ[i2], c, β)
-                else
-                    resj += 2*stein_k(j, θθ[:, i1], θθ[:, i2], ∇θθ[i1], ∇θθ[i2], c, β)
-                end
+        resi = 0.0
+        for i in eachindex(xx)
+            for k in 1:i
+                m = i == k ? 1.0 : 2.0 
+                resi += m*stein_k(j, xx[i], xx[k], ∇Uxx[i], ∇Uxx[k], c, β)
             end
         end
-        res += sqrt(resj)/N
+        res += sqrt(resi)
     end
-    return res
+    res/n
 end
+
+
 
    
 function evaluation(testdata, param)

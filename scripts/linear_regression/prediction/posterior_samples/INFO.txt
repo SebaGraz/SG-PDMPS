@@ -1,0 +1,1 @@
+N = 10000, p = 10, Niter = 100000, sparsity = 1.0, gamma0 = 0.1, rel number of 0 values = 0.5

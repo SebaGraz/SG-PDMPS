@@ -105,16 +105,16 @@ y = (rand(nobs) .< sigmoid.(A*xtrue))
 
 
 # check gradient
-x0 = rand(p)
+x0 = rand(20)
 function ϕ(x, y, A) 
     res = 0.0
     for i in 1:size(A,1)
-        res += y[i]*log(1 + exp(-dot(A[i,:], x))) - (1-y[i])*log(1 - 1/(1 + exp(-dot(A[i,:], x))))
+        res += -y[i]*log(1/(1 + exp(-dot(A[i,:], x)))) - (1-y[i])*log(1 - 1/(1 + exp(-dot(A[i,:], x))))
     end
     res
 end
-[ForwardDiff.gradient(x -> ϕ(x, y, A), x0)[1:10] ∇Ufull(x0, y, At)[1:10]]
-
+[ForwardDiff.gradient(x -> ϕ(x, y_test, X), x0)[1:10] ∇Ufull(x0, y_test, Xt)[1:10]]
+X = Xt'
 
 mb = Int(round(0.01*length(y))) #minibatch size, e.g. 1% of full data
 Niter_opt = 10^6
