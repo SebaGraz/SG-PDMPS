@@ -17,14 +17,14 @@ include("./"*str_regression*"/grad.jl")
 
 Random.seed!(1234);
 p = 10
-nobs = 10_000
+nobs = 100_000
 sparsity = 0.5
 println("...generating data...")
 include("./"*str_regression*"/data_generation.jl")
-hh = [1e-02, 5e-03, 1e-03, 5e-04, 1e-04, 5e-05, 1e-05, 5e-06, 1e-06, 5e-07, 1e-07]
+hh = [1e-02, 5e-03, 1e-03, 5e-04, 1e-04, 5e-05, 1e-05, 5e-06, 1e-06]
 
-Niter = 100_000 # number of iterations
-thin = 100
+Niter = 500_000 # number of iterations
+thin = 500
 
 function runall(A, y, Niter, thin, hh, str_regression)
     println("number of sample points: $(Niter ÷ thin)")
@@ -74,7 +74,7 @@ function runall(A, y, Niter, thin, hh, str_regression)
         # args...
         args = y_train, Xt_train, γ0
 
-        sgld_max_h = 1/nobs
+        sgld_max_h = Inf
         pdmp_min_h = 1e-07
         for h in hh
             println("h = $(h)")

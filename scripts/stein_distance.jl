@@ -11,7 +11,7 @@ include("./"*str_regression*"/grad.jl")
 
 
 # hh = [0.1, 0.05, 0.01, 0.005, 0.001, 0.0005, 0.0001]
-hh = [1e-02, 5e-03, 1e-03, 5e-04, 1e-04, 5e-05, 1e-05, 5e-06, 1e-06, 5e-07, 1e-07]
+hh = [1e-02, 5e-03, 1e-03, 5e-04, 1e-04, 5e-05, 1e-05, 5e-06, 1e-06]
 
 #Store the results
 results = fill(NaN, length(hh), 5)
@@ -22,7 +22,7 @@ str_h = "h_"
 str_csv = ".csv"
 str_data = "data"
 c = 1.0
-β = -0.1
+β = -0.5
 γ0 = 1/10
 DIRINDATA = str_folder*str_data*str_csv 
 data  = Matrix(CSV.read(DIRINDATA, DataFrame, header=false))
@@ -73,13 +73,11 @@ end
 res = [hh results]
 CSV.write("./scripts/"*str_regression*"/stein_distance/output/output.csv", DataFrame(res, :auto), header = false)                
 
-
 f1 = plot(title = "Stein Discrepancy "*str_regression, hh, results[:,1], xaxis = :log, label = "sgld1", legend=:outertopright )
 plot!(f1, hh, results[:, 2], label = "sgld10")
 plot!(f1, hh, results[:, 3], label = "sgld100")
 plot!(f1, hh, results[:, 4], label = "bps")
 plot!(f1, hh, results[:, 5], label = "zz")
 
-res = [sgld1_results sgld2_results sgld3_results zz_results bps_results]
 savefig(f1, "./scripts/"*str_regression*"/stein_distance/output/output.png")
 CSV.write("./scripts/"*str_regression*"/stein_distance/output/output.csv", DataFrame(res, :auto), header = false)                

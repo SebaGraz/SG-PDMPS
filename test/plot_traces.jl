@@ -1,7 +1,7 @@
 using Plots, CSV, DataFrames
 
 # INPUT STRINGS
-str_regression = "linear_regression/"
+str_regression = "logistic_regression/"
 str_folder = "scripts/"*str_regression*"prediction/posterior_samples/"
 str_h = "h_"
 str_iter = "_iter_"
@@ -13,9 +13,9 @@ xtrue = Matrix(CSV.read(str_folder*str_param*str_csv, DataFrame, header=false))[
 j = 7
 
 
-h = 0.000001
+h = 0.0001
 iter = 1
-str_sampler = "szz_" # "sgld2_" "zz_" "bps_" "szz_"
+str_sampler = "sgld1_" # "sgld2_" "zz_" "bps_" "szz_"
 DIRIN = str_folder*str_sampler*str_h*string(h)*str_iter*string(iter)*str_csv 
 trace = Matrix(CSV.read(DIRIN, DataFrame, header=false))
 f1 = plot(trace[j,:],  label = "sgld1", color = :black)

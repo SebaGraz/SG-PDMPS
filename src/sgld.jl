@@ -1,4 +1,4 @@
- 
+
 function sgld(∇U!, x0, h::Float64, N::Int64, args...;
     thin = 100, 
     max_grad_ev = Inf, 
