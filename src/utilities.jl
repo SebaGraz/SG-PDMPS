@@ -144,3 +144,21 @@ function evaluation(testdata, param)
     llh = -mean(log.(prob))
     return (acc, llh)
 end
+
+
+using StatsBase
+function autocorr(xx, lag)
+    N = size(xx, 2)
+    p = size(xx, 1)
+    res = zeros(p)
+    μ = mean(xx, dims = 2)
+    if (any(μ .== NaN))
+        return res
+    else
+        for i in 1:N-lag    
+            res .+= (xx[:,i] .- μ).*(xx[:,i + lag] .- μ)/(N-lag)
+        end
+    end
+    res
+end
+

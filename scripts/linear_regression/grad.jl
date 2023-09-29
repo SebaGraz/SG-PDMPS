@@ -40,8 +40,8 @@ function ∇Ucv!(∇Ux, x, nobs, minibatch, cv::CV, y, At, γ0)
     xhat, ∇Uhat = cv.x0, cv.∇x0
     ∇Ux .=  ∇Uhat
     # prior
-    ∇Ux[1] += γ0[1]*x[1]
-    ∇Ux[2:end] += γ0[2]*x[2:end]
+    ∇Ux[1] += γ0*x[1]
+    ∇Ux[2:end] += γ0*x[2:end]
     jj = rand(1:nobs, minibatch)
     for j in jj
         ∇Ux .+= nobs/minibatch*(∇Uj(x, j, y, At) - ∇Uj(xhat, j, y, At))
