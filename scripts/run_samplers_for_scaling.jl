@@ -17,8 +17,8 @@ include("./"*str_regression*"/grad.jl")
 
 
 Random.seed!(1234);
-hh = [1e-03, 1e-04, 1e-05]
-pp = [50, 100]
+hh = [1e-03, 1e-04, 1e-05, 1e-06]
+pp = [10, 50, 100, 150, 200]
 Niter = 100_000 # number of iterations
 thin = 100
 function runall(Niter, thin, hh, pp, str_regression)
@@ -54,11 +54,14 @@ function runall(Niter, thin, hh, pp, str_regression)
             # @show cv.x0 - xtrue
             # @show norm(cv.x0 - xtrue)
             γ0 = 1/10
-            xhat = inv(A'*A + I*γ0)A'y 
-            @show norm(∇Ufull(xhat, y, At, γ0))
-            args = y, At, γ0
-            cv = CV(true, xhat, ∇Ufull(xhat, args...))
+        #     xhat = inv(A'*A + I*γ0)A'y
+            xhat = inv(A'*A)A'y 
+        #     @show norm(∇Ufull(xhat, y, At, γ0))
+            args_no_prior = y, At
+            cv = CV(true, xhat, ∇Ufull(xhat, args_no_prior...))
+            @show norm(cv.∇x0)
             # args...
+                args = y, At, γ0
             x0 = cv.x0
             sgld_max_h = Inf
             pdmp_min_h = -Inf
