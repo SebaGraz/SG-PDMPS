@@ -9,13 +9,13 @@ println("...defining gradient...")
 include("./"*str_regression*"/grad.jl")
 
 
-hh = [1e-03, 1e-04, 1e-05]
-pp = [50, 100]
+hh = [1e-02, 1e-03, 1e-04, 1e-05, 1e-06]
+pp = [10, 50, 100, 150, 200]
 # INPUT STRINGS
 for h in hh
     for d in pp
         #Store the results
-        res = fill(d, 10)
+        res = fill(d, 30)
         str_data = "./scripts/"*str_regression*"/scaling/data/"
         str_trace = "./scripts/"*str_regression*"/scaling/posterior_samples/"
         str_h = "h_"
@@ -34,18 +34,18 @@ for h in hh
         DIRIN = str_trace*str_sampler*str_h*string(h)*str_d*string(d)*str_csv 
         if isfile(DIRIN)
             trace = Matrix(CSV.read(DIRIN, DataFrame; header=false))
-            res = zeros(d, 10)
+            res = zeros(d, 30)
             c = autocorr(trace, 0)
-            res = [autocorr(trace, lag)./c for lag in 1:10]
+            res = [autocorr(trace, lag)./c for lag in 1:30]
             CSV.write("./scripts/"*str_regression*"/scaling/autocorrelation/"*str_sampler*str_h*string(h)*"_"*str_d*string(d)*".csv", DataFrame(res, :auto), header = false)
         end
         str_sampler = "sgld2_" # "sgld2_" "zz_" "bps_" "szz_"
         DIRIN = str_trace*str_sampler*str_h*string(h)*str_d*string(d)*str_csv 
         if isfile(DIRIN)
             trace = Matrix(CSV.read(DIRIN, DataFrame; header=false))
-            res = zeros(d, 10)
+            res = zeros(d, 30)
             c = autocorr(trace, 0)
-            res = [autocorr(trace, lag)./c for lag in 1:10]
+            res = [autocorr(trace, lag)./c for lag in 1:30]
             CSV.write("./scripts/"*str_regression*"/scaling/autocorrelation/"*str_sampler*str_h*string(h)*"_"*str_d*string(d)*".csv", DataFrame(res, :auto), header = false)
         end
 
@@ -53,32 +53,31 @@ for h in hh
         DIRIN = str_trace*str_sampler*str_h*string(h)*str_d*string(d)*str_csv 
         if isfile(DIRIN)
             trace = Matrix(CSV.read(DIRIN, DataFrame; header=false))
-            res = zeros(d, 10)
+            res = zeros(d, 30)
             c = autocorr(trace, 0)
-            res = [autocorr(trace, lag)./c for lag in 1:10]
+            res = [autocorr(trace, lag)./c for lag in 1:30]
             CSV.write("./scripts/"*str_regression*"/scaling/autocorrelation/"*str_sampler*str_h*string(h)*"_"*str_d*string(d)*".csv", DataFrame(res, :auto), header = false)
         end
         str_sampler = "zz_" # "sgld2_" "zz_" "bps_" "szz_"
         DIRIN = str_trace*str_sampler*str_h*string(h)*str_d*string(d)*str_csv 
         if isfile(DIRIN)
             trace = Matrix(CSV.read(DIRIN, DataFrame; header=false))
-            res = zeros(d, 10)
+            res = zeros(d, 30)
             c = autocorr(trace, 0)
-            res = [autocorr(trace, lag)./c for lag in 1:10]
+            res = [autocorr(trace, lag)./c for lag in 1:30]
             CSV.write("./scripts/"*str_regression*"/scaling/autocorrelation/"*str_sampler*str_h*string(h)*"_"*str_d*string(d)*".csv", DataFrame(res, :auto), header = false)
         end
         str_sampler = "bps_" # "sgld2_" "zz_" "bps_" "szz_"
         DIRIN = str_trace*str_sampler*str_h*string(h)*str_d*string(d)*str_csv
         if isfile(DIRIN)
             trace = Matrix(CSV.read(DIRIN, DataFrame; header=false))
-            res = zeros(d, 10)
+            res = zeros(d, 30)
             c = autocorr(trace, 0)
-            res = [autocorr(trace, lag) for lag in 1:10]
+            res = [autocorr(trace, lag)./c for lag in 1:30]
             CSV.write("./scripts/"*str_regression*"/scaling/autocorrelation/"*str_sampler*str_h*string(h)*"_"*str_d*string(d)*".csv", DataFrame(res, :auto), header = false)
         end
     end
 end
-error("")
 
 # res = [hh results]
 # CSV.write("./scripts/"*str_regression*"/stein_distance/output/laplace.csv", DataFrame(res, :auto), header = false)                

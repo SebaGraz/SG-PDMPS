@@ -5,7 +5,8 @@ str_d = "d_"
 str_csv = ".csv"
 str_data = "data_"
 nobs = 10^4
-dd = [10, 50, 100, 150, 200]
+dd = [10, 50, 100, 200, 300, 400, 500, 650, 800, 1000]
+
 Random.seed!(1234)
 for p in dd
     Σ = zeros(p-1,p-1)

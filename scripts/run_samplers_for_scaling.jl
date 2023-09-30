@@ -17,10 +17,10 @@ include("./"*str_regression*"/grad.jl")
 
 
 Random.seed!(1234);
-hh = [1e-03, 1e-04, 1e-05, 1e-06]
-pp = [10, 50, 100, 150, 200]
+h = [5e-07]
+pp = [10, 50, 100, 200, 300, 400, 500, 650, 800, 1000]
 Niter = 100_000 # number of iterations
-thin = 100
+thin = 10
 function runall(Niter, thin, hh, pp, str_regression)
     println("number of sample points: $(Niter ÷ thin)")
     γ0 = [1/10, 1/10]
@@ -39,34 +39,34 @@ function runall(Niter, thin, hh, pp, str_regression)
     str_d = "d_"
     for p in pp 
         for h in  hh
-            println("p = $(p), h = $h")
-            DIROUTDATA = str_folder*str_data*str_d*string(p)*str_csv 
-            data = Matrix(CSV.read(DIROUTDATA, DataFrame, header=false))
-            A, y = Matrix(data[:,1:(end-1)]), Vector(data[:,end])
-            At = A'
-            nobs = size(At, 2)
-            # FIND MODE
-            mb = Int(round(0.01*length(y))) #minibatch size, e.g. 1% of full data
-            # Niter_opt = 10^6
-            # @show norm(x0 - xtrue)
-            # cv = AdamCV(∇U!, ∇Ufull, x0, nobs, mb, Niter_opt, y, At)
-            # println("norm of gradient at control variates: $(norm(cv.∇x0))")
-            # @show cv.x0 - xtrue
-            # @show norm(cv.x0 - xtrue)
-            γ0 = 1/10
-        #     xhat = inv(A'*A + I*γ0)A'y
-            xhat = inv(A'*A)A'y 
-        #     @show norm(∇Ufull(xhat, y, At, γ0))
-            args_no_prior = y, At
-            cv = CV(true, xhat, ∇Ufull(xhat, args_no_prior...))
-            @show norm(cv.∇x0)
-            # args...
+                println("p = $(p), h = $h")
+                DIROUTDATA = str_folder*str_data*str_d*string(p)*str_csv 
+                data = Matrix(CSV.read(DIROUTDATA, DataFrame, header=false))
+                A, y = Matrix(data[:,1:(end-1)]), Vector(data[:,end])
+                At = A'
+                nobs = size(At, 2)
+                # FIND MODE
+                mb = Int(round(0.01*length(y))) #minibatch size, e.g. 1% of full data
+                # Niter_opt = 10^6
+                # @show norm(x0 - xtrue)
+                # cv = AdamCV(∇U!, ∇Ufull, x0, nobs, mb, Niter_opt, y, At)
+                # println("norm of gradient at control variates: $(norm(cv.∇x0))")
+                # @show cv.x0 - xtrue
+                # @show norm(cv.x0 - xtrue)
+                γ0 = 1/10
+                #     xhat = inv(A'*A + I*γ0)A'y
+                xhat = inv(A'*A)A'y 
+                #     @show norm(∇Ufull(xhat, y, At, γ0))
+                args_no_prior = y, At
+                cv = CV(true, xhat, ∇Ufull(xhat, args_no_prior...))
+                @show norm(cv.∇x0)
+                # args...
                 args = y, At, γ0
-            x0 = cv.x0
-            sgld_max_h = Inf
-            pdmp_min_h = -Inf
-            println("h = $(h)")
-            if h <= sgld_max_h
+                x0 = cv.x0
+                sgld_max_h = Inf
+                pdmp_min_h = -Inf
+                println("h = $(h)")
+                if h <= sgld_max_h
                     #SGLD 
                     println("Running SGLD mb = 1")
                     mb = 1
@@ -83,36 +83,36 @@ function runall(Niter, thin, hh, pp, str_regression)
                             nobs = nobs) 
                     CSV.write(out*str_sgld1*str_h*string(h)*str_d*string(p)*str_csv, DataFrame(out_sgld1.trace, :auto), header = false)    
 
+                #     #SGLD 
+                #     println("Running SGLD mb = 10")
+                #     mb = 10
+                #     x0 = copy(cv.x0) 
+                #     verbose = false
+                #     control_variates = cv
+                #     trace = true
+                #     out_sgld2 = sgld(∇Ucv!, x0, h, Niter, args...; 
+                #             thin = thin, 
+                #             cv = cv,
+                #             trace = trace,
+                #             verbose = verbose, 
+                #             minibatch = mb,
+                #             nobs = nobs)
+                #     CSV.write(out*str_sgld2*str_h*string(h)*str_d*string(p)*str_csv, DataFrame(out_sgld2.trace, :auto), header = false)    
                     #SGLD 
-                    println("Running SGLD mb = 10")
-                    mb = 10
-                    x0 = copy(cv.x0) 
-                    verbose = false
-                    control_variates = cv
-                    trace = true
-                    out_sgld2 = sgld(∇Ucv!, x0, h, Niter, args...; 
-                            thin = thin, 
-                            cv = cv,
-                            trace = trace,
-                            verbose = verbose, 
-                            minibatch = mb,
-                            nobs = nobs)
-                    CSV.write(out*str_sgld2*str_h*string(h)*str_d*string(p)*str_csv, DataFrame(out_sgld2.trace, :auto), header = false)    
-                    #SGLD 
-                    println("Running SGLD mb = 100")
-                    mb = 100
-                    x0 = copy(cv.x0) 
-                    verbose = false
-                    control_variates = cv
-                    trace = true
-                    out_sgld3 = sgld(∇Ucv!, x0, h, Niter, args...; 
-                            thin = thin, 
-                            cv = cv,
-                            trace = trace,
-                            verbose = verbose, 
-                            minibatch = mb,
-                            nobs = nobs)  
-                    CSV.write(out*str_sgld3*str_h*string(h)*str_d*string(p)*str_csv, DataFrame(out_sgld3.trace, :auto), header = false)   
+                #     println("Running SGLD mb = 100")
+                #     mb = 100
+                #     x0 = copy(cv.x0) 
+                #     verbose = false
+                #     control_variates = cv
+                #     trace = true
+                #     out_sgld3 = sgld(∇Ucv!, x0, h, Niter, args...; 
+                #             thin = thin, 
+                #             cv = cv,
+                #             trace = trace,
+                #             verbose = verbose, 
+                #             minibatch = mb,
+                #             nobs = nobs)  
+                #     CSV.write(out*str_sgld3*str_h*string(h)*str_d*string(p)*str_csv, DataFrame(out_sgld3.trace, :auto), header = false)   
             end
             if h >= pdmp_min_h           
                 #Zig-Zag
