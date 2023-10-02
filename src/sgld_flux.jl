@@ -15,8 +15,8 @@ using Flux, Plots, Distributions, Random
 # loss(m, x, y) = Flux.mse(m(x), y)
 
 
-function sgld_flux((x, y, model, loss), Niter, h, thin)
-    xx = [loss(model, x, y),]
+function sgld_flux((x, y, model, loss), Niter, h, thin, (x_test, y_test))
+    xx = [loss(model, x_test, y_test),]
     model0 = deepcopy(model)
     fullgrads0 = Flux.gradient(model0) do m 
         loss(m, x, y)
@@ -44,7 +44,7 @@ function sgld_flux((x, y, model, loss), Niter, h, thin)
         model = reconstruct(θ)
         # plot!(vec(x), model(x)[:], alpha = 0.1)
         if j % thin == 0 
-            push!(xx, loss(model, x, y))
+            push!(xx, loss(model, x_test, y_test))
         end
     end
     model, xx

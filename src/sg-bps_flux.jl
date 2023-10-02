@@ -38,8 +38,8 @@ function eventbps(tmax, λ, λref)
 end
 
 
-function sgbps_flux((x, y, model, loss), λref, Niter, h, thin)
-    xx = [loss(model, x, y),]
+function sgbps_flux((x, y, model, loss), λref, Niter, h, thin, (x_test, y_test))
+    xx = [loss(model, x_test, y_test),]
     model0 = deepcopy(model)
     fullgrads0 = Flux.gradient(model0) do m 
         loss(m, x, y)
@@ -84,7 +84,7 @@ function sgbps_flux((x, y, model, loss), λref, Niter, h, thin)
             i += 1
             dt=h
             if i % thin == 0
-                push!(xx, loss(model, x, y))
+                push!(xx, loss(model, x_test, y_test))
             end   
         end 
         # @. params = params - 0.001 * ∇Uparams
