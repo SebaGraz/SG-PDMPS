@@ -4,11 +4,10 @@ str_folder = "./scripts/"*str_regression*"/scaling/data/"
 str_d = "d_"
 str_csv = ".csv"
 str_data = "data_"
-nobs = 10^4
-dd = [10, 50, 100, 200, 300, 400, 500, 650, 800, 1000]
-
+nobs = 10^5
+pp = [10, 20, 30, 40, 50, 60, 70, 100]
 Random.seed!(1234)
-for p in dd
+for p in pp
     Σ = zeros(p-1,p-1)
     for i in 1:p-1
         for j in 1:i

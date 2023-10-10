@@ -17,14 +17,15 @@ function eventzz(tmax, λs, λref)
     return τ0, k0, ev
 end
    
-function sg_zz_model(∇U!, x0, h, N, args...; 
+function sg_zz_model(cond_model, x0, h, N; 
         thin = 100, λref = 0.0,
         max_grad_ev = Inf, 
         cv = CV(false),
         test = Test(false),
         verbose = false,
         trace = true,
-        minibatch = 10,
+        ad_backend = ForwardDiffAD{40}(),
+        minibatch,
         nobs)
     if verbose
         println("Info:\n 
@@ -36,13 +37,28 @@ function sg_zz_model(∇U!, x0, h, N, args...;
           control variates: $(cv.cv),\n
           ")
       end
+      vi_orig = DynamicPPL.VarInfo(cond_model)
+      spl = DynamicPPL.SampleFromPrior()
+      vi_current = DynamicPPL.VarInfo(DynamicPPL.VarInfo(cond_model), spl, vi_orig[spl])
+      f = LogDensityProblemsAD.ADgradient(
+          ad_backend,
+          Turing.LogDensityFunction(vi_current, cond_model, spl, DynamicPPL.DefaultContext())
+          )   
+      logp(x) = LogDensityProblems.logdensity_and_gradient(f, x)[1]
+      _∇logp(x) = LogDensityProblems.logdensity_and_gradient(f, x)[2]*nobs/minibatch
+      function ∇logp(x, cv) 
+        if cv.cv == false
+            return _∇logp(x)
+        else
+            return _∇logp(x) -  _∇logp(cv.x0) + cv.∇x0
+        end
+      end  
     out = Output("sg-zz")
     # x = vi_current[spl]
     x = copy(x0)
     p = length(x)
     v = rand([-1.0, +1.0], p) 
-    ∇Ux = zeros(p)
-    ∇Ux = ∇U!(∇Ux, x,  nobs, minibatch, cv, args...) 
+    ∇Ux = -∇logp(x, cv)
     i = 1
     t = 0.0
     τ0 = Inf
@@ -82,8 +98,9 @@ function sg_zz_model(∇U!, x0, h, N, args...;
               end
         end
         grad_ev += minibatch
-        ∇Ux = ∇U!(∇Ux, x,  nobs, minibatch, cv, args...) 
+        ∇Ux = -∇logp(x, cv)
     end
+    @show grad_ev
     out
 end
 

@@ -24,7 +24,7 @@ println("...generating data...")
 include("./"*str_regression*"/data_generation.jl")
 hh = [1e-02, 5e-03, 1e-03, 5e-04, 1e-04, 5e-05, 1e-05, 5e-06, 1e-06]
 
-Niter = 500_000 # number of iterations
+Niter = 10^6 # number of iterations
 thin = 500
 
 function runall(A, y, Niter, thin, hh, str_regression)

@@ -23,13 +23,13 @@ println("...generating data...")
 include("./"*str_regression*"/data_generation.jl")
 hh = [1e-02, 5e-03, 1e-03, 5e-04, 1e-04, 5e-05, 1e-05, 5e-06, 1e-06]
 
-Niter = 500_000 # number of iterations
+Niter = 10^6 # number of iterations
 thin = 500
 
 function runall(A, y, Niter, thin, hh, str_regression)
     println("number of sample points: $(Niter ÷ thin)")
     γ0 = [1/10, 1/10]
-    spars = 1.0
+    spars = 0.13 # 1/sqrt(2π*10)
 
     # Build the training and testing data set
     train_ratio = 0.9 # We create the train and test sets with 90% and 10% of the data

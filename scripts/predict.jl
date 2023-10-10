@@ -70,7 +70,7 @@ for iter in 1:10
 end
 
 
-
+using Plots
 f1 = plot(title = "Predicition power "*str_regression, hh, mean(sgld1_results, dims = 2)[:], xaxis = :log, label = "sgld1")
 plot!(f1, hh, mean(sgld2_results, dims = 2)[:], label = "sgld10")
 plot!(f1, hh, mean(sgld3_results, dims = 2)[:], label = "sgld100")
@@ -97,8 +97,4 @@ plot!(f3, hh, maximum(bps_results2, dims = 2)[:], label = "bps")
 plot!(f3, hh, maximum(zz_results2, dims = 2)[:], label = "zz")
 plot!(f3, hh, maximum(szz_results2, dims = 2)[:], label = "szz")
 
-
-fout = plot(f1, f2, f3, layout = l)
-savefig(f2, "./scripts/"*str_regression*"/prediction/output/output1.png")
-savefig(f21, "./scripts/"*str_regression*"/prediction/output/output2.png")
-savefig(f3, "./scripts/"*str_regression*"/prediction/output/output3.png")
+savefig(f2, "./scripts/"*str_regression*"/prediction/output/average_loss.pdf")

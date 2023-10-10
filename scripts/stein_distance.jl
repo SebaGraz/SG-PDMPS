@@ -80,4 +80,7 @@ plot!(f1, hh, results[:, 4], label = "bps")
 plot!(f1, hh, results[:, 5], label = "zz")
 
 savefig(f1, "./scripts/"*str_regression*"/stein_distance/output/output.png")
-CSV.write("./scripts/"*str_regression*"/stein_distance/output/output.csv", DataFrame(res, :auto), header = false)                
+CSV.write("./scripts/"*str_regression*"/stein_distance/output/output.csv", DataFrame(res, :auto), header = false)  
+savefig(f1, "./scripts/"*str_regression*"/stein_distance/output/stein.pdf")
+results[5:6,1:3] .= NaN 
+results

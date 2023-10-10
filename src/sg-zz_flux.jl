@@ -39,8 +39,9 @@ function eventzz(tmax, λs, λref)
 end
 
 
-function sgzz_flux((x, y, model, loss), λref, Niter, h, thin, (x_test, y_test))
-    xx = [loss(model, x_test, y_test),]
+function sgzz_flux((x, y, model, loss), loss2, λref, Niter, h, thin, (x_test, y_test))
+    xx = [loss2(model, x_test, y_test),]
+    xx1 = [loss2(model, x_test, y_test),]
     model0 = deepcopy(model)
     fullgrads0 = Flux.gradient(model0) do m 
         loss(m, x, y)
@@ -48,6 +49,7 @@ function sgzz_flux((x, y, model, loss), λref, Niter, h, thin, (x_test, y_test))
     ∇Uθ0_full, _ = Flux.destructure(fullgrads0)
     nobs = size(x, 2)
     θ0, reconstruct = Flux.destructure(model)
+    θ̅ = copy(θ0)
     p = length(θ0)
     v = rand([-1.0, +1.0], p) 
     i = 1
@@ -78,15 +80,18 @@ function sgzz_flux((x, y, model, loss), λref, Niter, h, thin, (x_test, y_test))
         else
             i += 1
             dt=h
+            θ̅ = (θ̅*(i-1) + θ)/i
             if i % thin == 0
-                push!(xx, loss(model, x_test, y_test))
+                push!(xx, loss2(model, x_test, y_test))
+                av_model = reconstruct(θ̅)
+                push!(xx1, loss2(av_model, x_test, y_test))
             end   
         end 
         # @. params = params - 0.001 * ∇Uparams
         model = reconstruct(θ)
         # plot!(vec(x), model(x)[:], alpha = 0.1)
     end
-    model, xx
+    model, xx, xx1
 end
 
 # model1, trace = sgzz_flux((x, y, model, loss),  0.0, 100_000, 0.00005, 1000)

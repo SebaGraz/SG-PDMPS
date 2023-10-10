@@ -38,7 +38,7 @@ println("norm of gradient at control variates: $(norm(cv.∇x0))")
 
 Γ =  ΔU(cv.x0, y, At, γ0)
 dd = sqrt.(diag(Γ))
-
+σ = 1.0./dd
 for i in eachindex(hh)
     h = hh[i]
     println("h = $(h)")
@@ -46,32 +46,32 @@ for i in eachindex(hh)
     DIRIN = str_folder*str_sampler*str_h*string(h)*str_csv 
     if isfile(DIRIN)
         trace = Matrix(CSV.read(DIRIN, DataFrame; header=false))
-        results[i, 1] = norm(std(trace, dims = 2) .- 1.0./dd)
+        results[i, 1] = 1/length(σ)*sum(abs2, (std(trace, dims = 2) .- σ)./σ)
     end
     str_sampler = "sgld2_" # "sgld2_" "zz_" "bps_" "szz_"
     DIRIN = str_folder*str_sampler*str_h*string(h)*str_csv 
     if isfile(DIRIN)
         trace = Matrix(CSV.read(DIRIN, DataFrame; header=false))
-        results[i, 2] = norm(std(trace, dims = 2) .- 1.0./dd)
+        results[i, 2] = 1/length(σ)*sum(abs2, (std(trace, dims = 2) .- σ)./σ)
     end
 
     str_sampler = "sgld3_" # "sgld2_" "zz_" "bps_" "szz_"
     DIRIN = str_folder*str_sampler*str_h*string(h)*str_csv 
     if isfile(DIRIN)
         trace = Matrix(CSV.read(DIRIN, DataFrame; header=false))
-        results[i, 3] = norm(std(trace, dims = 2) .- 1.0./dd)
+        results[i, 3] = 1/length(σ)*sum(abs2, (std(trace, dims = 2) .- σ)./σ)
     end
     str_sampler = "zz_" # "sgld2_" "zz_" "bps_" "szz_"
     DIRIN = str_folder*str_sampler*str_h*string(h)*str_csv 
     if isfile(DIRIN)
         trace = Matrix(CSV.read(DIRIN, DataFrame; header=false))
-        results[i, 4] = norm(std(trace, dims = 2) .- 1.0./dd)
+        results[i, 4] = 1/length(σ)*sum(abs2, (std(trace, dims = 2) .- σ)./σ)
     end
     str_sampler = "bps_" # "sgld2_" "zz_" "bps_" "szz_"
     DIRIN = str_folder*str_sampler*str_h*string(h)*str_csv
     if isfile(DIRIN)
         trace = Matrix(CSV.read(DIRIN, DataFrame; header=false))
-        results[i, end] = norm(std(trace, dims = 2) .- 1.0./dd)
+        results[i, end] = 1/length(σ)*sum(abs2, (std(trace, dims = 2) .- σ)./σ)
     end
 end
 
@@ -80,10 +80,11 @@ res = [hh results]
 CSV.write("./scripts/"*str_regression*"/stein_distance/output/laplace.csv", DataFrame(res, :auto), header = false)                
 
 
-f1 = plot(title = "Distance to LA: "*str_regression, hh, linestyle = :dash, results[:,1], xaxis = :log, label = "sgld1", legend=:outertopright )
-plot!(f1, hh, results[:, 2],  linestyle = :dash, label = "sgld10")
-plot!(f1, hh, results[:, 3],  linestyle = :dash, label = "sgld100")
-plot!(f1, hh, results[:, 4], label = "zz")
-plot!(f1, hh, results[:, 5], label = "bps")
+f1 = plot(title = "Distance to LA: "*str_regression, hh[3:end], linestyle = :dash, results[3:end,1], xaxis = :log, label = "sgld1", legend=:outertopright )
+plot!(f1, hh[3:end], results[3:end, 2],  linestyle = :dash, label = "sgld10")
+plot!(f1, hh[3:end], results[3:end, 3],  linestyle = :dash, label = "sgld100")
+plot!(f1, hh[3:end], results[3:end, 4], label = "zz")
+plot!(f1, hh[3:end], results[3:end, 5], label = "bps")
 f1
-savefig(f1, "./scripts/"*str_regression*"/stein_distance/output/laplace.png")            
+savefig(f1, "./scripts/"*str_regression*"/stein_distance/output/laplace.pdf")       
+f1     

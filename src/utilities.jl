@@ -162,3 +162,84 @@ function autocorr(xx, lag)
     res
 end
 
+
+
+function findCV(smodel, fullmodel, ϵ, Niter, batchsize, Nobs; α=0.9, ad_backend = ForwardDiffAD{40}())
+    vi_orig = DynamicPPL.VarInfo(smodel)
+    spl = DynamicPPL.SampleFromPrior()
+    vi_current = DynamicPPL.VarInfo(vi_orig, spl, vi_orig[spl])
+    f = LogDensityProblemsAD.ADgradient(
+        ad_backend,
+        Turing.LogDensityFunction(vi_current, smodel, spl, DynamicPPL.DefaultContext())
+        )   
+    s∇logp_(x) = LogDensityProblems.logdensity_and_gradient(f, x)[2]
+    vi_orig2 = DynamicPPL.VarInfo(fullmodel)
+    spl2 = DynamicPPL.SampleFromPrior()
+    vi_current2 = DynamicPPL.VarInfo(vi_orig2, spl2, vi_orig2[spl2])
+    f2 = LogDensityProblemsAD.ADgradient(
+        ad_backend,
+        Turing.LogDensityFunction(vi_current2, fullmodel, spl2, DynamicPPL.DefaultContext())
+        )   
+    ∇logp(x) = LogDensityProblems.logdensity_and_gradient(f2, x)[2]
+    s∇logp(x) = Nobs/batchsize*s∇logp_(x)
+    x =  vi_current2[spl]
+    println("optimization routine for finding local mode")
+    fudge_factor = 1e-6
+    grad_theta = s∇logp(x)
+    historical_grad = grad_theta.^2
+    for i in 1:Niter
+        i % (Niter÷10) == 0 && println("...$(i*100/Niter)%")
+        grad_theta = s∇logp(x)
+        historical_grad = α * historical_grad + (1 - α) * (grad_theta.^2)
+        adj_grad = grad_theta./(fudge_factor.+sqrt.(historical_grad))
+        x += ϵ*adj_grad
+    end
+    return CV(true, x, ∇logp(x))
+end
+
+function mse(f, x, y, params)
+    ŷ = f(x, params)
+    return (y - ŷ)^2
+end
+
+
+
+# ∇U! has to be an unbiased estimator
+function AdamCV(smodel, fullmodel, nobs, minibatch, epochs; ad_backend = ForwardDiffAD{40}(), eps = 1e-8, α = 0.001, β1 = 0.9, β2 = 0.999)
+    vi_orig = DynamicPPL.VarInfo(smodel)
+    spl = DynamicPPL.SampleFromPrior()
+    vi_current = DynamicPPL.VarInfo(vi_orig, spl, vi_orig[spl])
+    f = LogDensityProblemsAD.ADgradient(
+        ad_backend,
+        Turing.LogDensityFunction(vi_current, smodel, spl, DynamicPPL.DefaultContext())
+        )   
+    s∇logp_(x) = LogDensityProblems.logdensity_and_gradient(f, x)[2]
+    vi_orig2 = DynamicPPL.VarInfo(fullmodel)
+    spl2 = DynamicPPL.SampleFromPrior()
+    vi_current2 = DynamicPPL.VarInfo(vi_orig2, spl2, vi_orig2[spl2])
+    f2 = LogDensityProblemsAD.ADgradient(
+        ad_backend,
+        Turing.LogDensityFunction(vi_current2, fullmodel, spl2, DynamicPPL.DefaultContext())
+        )   
+    ∇Ufull(x) = -LogDensityProblems.logdensity_and_gradient(f2, x)[2]
+    ∇U(x) = -nobs/minibatch*s∇logp_(x)
+    println("optimization routine for finding local mode")
+    t = 0
+    θ0 =  vi_current2[spl]
+    θ = copy(θ0)
+    mt = zeros(length(θ0))
+    vt = zeros(length(θ0))
+    
+    gt = zeros(length(θ0))
+    while t < epochs 
+        t += 1
+        t % (epochs÷10) == 0 && println("...$(t*100/epochs)%")
+        gt = ∇U(θ)
+        mt = β1*mt + (1-β1)*gt
+        vt = β2*vt + (1-β2)gt.^2
+        mthat = mt/(1-β1^t)
+        vthat = vt/(1-β2^t)
+        θ -= α*mthat./(sqrt.(vthat) .+ eps) 
+    end
+    return CV(true, θ, ∇Ufull(θ))
+end

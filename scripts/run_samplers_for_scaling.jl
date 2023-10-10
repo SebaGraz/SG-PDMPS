@@ -17,10 +17,13 @@ include("./"*str_regression*"/grad.jl")
 
 
 Random.seed!(1234);
-h = [5e-07]
-pp = [10, 50, 100, 200, 300, 400, 500, 650, 800, 1000]
-Niter = 100_000 # number of iterations
-thin = 10
+hh = [5e-07]
+# pp = [10, 50, 100, 200, 300, 400, 500, 600, 700,  800,  900, 1000]
+pp = [10, 20, 30, 40, 50, 60, 70, 100]
+# pp = [100]
+# Niter = 50_000 # number of iterations
+Niter = 2_000_000
+thin = 1000
 function runall(Niter, thin, hh, pp, str_regression)
     println("number of sample points: $(Niter ÷ thin)")
     γ0 = [1/10, 1/10]
@@ -28,8 +31,6 @@ function runall(Niter, thin, hh, pp, str_regression)
     # OUTPUT STRINGS
     out = "./scripts/"*str_regression*"/scaling/posterior_samples/"
     str_sgld1 = "sgld1_" 
-    str_sgld2 = "sgld2_"
-    str_sgld3 = "sgld3_"
     str_h = "h_"
     str_zz =  "zz_"
     str_bps =  "bps_"

@@ -15,15 +15,18 @@ using Flux, Plots, Distributions, Random
 # loss(m, x, y) = Flux.mse(m(x), y)
 
 
-function sgld_flux((x, y, model, loss), Niter, h, thin, (x_test, y_test))
-    xx = [loss(model, x_test, y_test),]
+function sgld_flux((x, y, model, loss), loss2, Niter, h, thin, (x_test, y_test))
+    xx = [loss2(model, x_test, y_test),]
+    xx1 = [loss2(model, x_test, y_test),]
     model0 = deepcopy(model)
     fullgrads0 = Flux.gradient(model0) do m 
         loss(m, x, y)
     end
     ∇Uθ0_full, _ = Flux.destructure(fullgrads0)
     nobs = size(x, 2)
-    for j in 1:Niter
+    θ0, reconstruct = Flux.destructure(model)
+    θ̅ = copy(θ0)
+    for j in 2:Niter
         # i = 1:61
         i = rand(1:nobs)
         input, output = x[:, i], y[:,i]
@@ -43,11 +46,14 @@ function sgld_flux((x, y, model, loss), Niter, h, thin, (x_test, y_test))
         # @. params = params - 0.001 * ∇Uparams
         model = reconstruct(θ)
         # plot!(vec(x), model(x)[:], alpha = 0.1)
+        θ̅ = (θ̅*(j-1) + θ)/j
         if j % thin == 0 
-            push!(xx, loss(model, x_test, y_test))
+            push!(xx, loss2(model, x_test, y_test))
+            av_model = reconstruct(θ̅)
+            push!(xx1, loss2(av_model, x_test, y_test))
         end
     end
-    model, xx
+    model, xx, xx1
 end
 
 # model1, trace = sgld_flux((x, y, model, loss), 30_000, 0.000001, 100)

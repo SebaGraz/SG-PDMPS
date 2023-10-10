@@ -1,16 +1,16 @@
 
 str_regression = "linear_regression"
 
-
 using LinearAlgebra, CSV, DataFrames, Plots. StatsBase
 include("./../src/utilities.jl")
 
 println("...defining gradient...")
 include("./"*str_regression*"/grad.jl")
 
-
-hh = [1e-06, 5e-07, 1e-07]
-pp = [10, 50, 100, 200, 300, 400, 500, 650, 800, 1000]
+hh = [5e-07]
+# pp = [10, 50, 100, 200, 300, 400, 500, 600, 700,  800,  900, 1000]
+pp = [10, 20, 30, 40, 50, 60, 70, 100]
+burnin = 100
 # INPUT STRINGS
 for h in hh
     for d in pp
@@ -37,32 +37,32 @@ for h in hh
         true_variance = A 
         if isfile(DIRIN)
             trace = Matrix(CSV.read(DIRIN, DataFrame; header=false))
-            CSV.write("./scripts/"*str_regression*"/scaling/variances/"*str_sampler*str_h*string(h)*"_"*str_d*string(d)*".csv", DataFrame(std(trace, dims = 2) - σ, :auto), header = false)
+            CSV.write("./scripts/"*str_regression*"/scaling/variances/"*str_sampler*str_h*string(h)*str_d*string(d)*".csv", DataFrame((std(trace[:,burnin:end], dims = 2) - σ)./σ, :auto), header = false)
         end
-        str_sampler = "sgld2_" # "sgld2_" "zz_" "bps_" "szz_"
-        DIRIN = str_trace*str_sampler*str_h*string(h)*str_d*string(d)*str_csv 
-        if isfile(DIRIN)
-            trace = Matrix(CSV.read(DIRIN, DataFrame; header=false))
-            CSV.write("./scripts/"*str_regression*"/scaling/variances/"*str_sampler*str_h*string(h)*"_"*str_d*string(d)*".csv", DataFrame(std(trace, dims = 2) - σ, :auto), header = false)
-        end
+        # str_sampler = "sgld2_" # "sgld2_" "zz_" "bps_" "szz_"
+        # DIRIN = str_trace*str_sampler*str_h*string(h)*str_d*string(d)*str_csv 
+        # if isfile(DIRIN)
+        #     trace = Matrix(CSV.read(DIRIN, DataFrame; header=false))
+        #     CSV.write("./scripts/"*str_regression*"/scaling/variances/"*str_sampler*str_h*string(h)*"_"*str_d*string(d)*".csv", DataFrame((std(trace, dims = 2) - σ)./σ, :auto), header = false)
+        # end
 
-        str_sampler = "sgld3_" # "sgld2_" "zz_" "bps_" "szz_"
-        DIRIN = str_trace*str_sampler*str_h*string(h)*str_d*string(d)*str_csv 
-        if isfile(DIRIN)
-            trace = Matrix(CSV.read(DIRIN, DataFrame; header=false))
-            CSV.write("./scripts/"*str_regression*"/scaling/variances/"*str_sampler*str_h*string(h)*"_"*str_d*string(d)*".csv", DataFrame(std(trace, dims = 2) - σ, :auto), header = false)
-        end
+        # str_sampler = "sgld3_" # "sgld2_" "zz_" "bps_" "szz_"
+        # DIRIN = str_trace*str_sampler*str_h*string(h)*str_d*string(d)*str_csv 
+        # if isfile(DIRIN)
+        #     trace = Matrix(CSV.read(DIRIN, DataFrame; header=false))
+        #     CSV.write("./scripts/"*str_regression*"/scaling/variances/"*str_sampler*str_h*string(h)*"_"*str_d*string(d)*".csv", DataFrame((std(trace, dims = 2) - σ)./σ, :auto), header = false)
+        # end
         str_sampler = "zz_" # "sgld2_" "zz_" "bps_" "szz_"
         DIRIN = str_trace*str_sampler*str_h*string(h)*str_d*string(d)*str_csv 
         if isfile(DIRIN)
             trace = Matrix(CSV.read(DIRIN, DataFrame; header=false))
-            CSV.write("./scripts/"*str_regression*"/scaling/variances/"*str_sampler*str_h*string(h)*"_"*str_d*string(d)*".csv", DataFrame(std(trace, dims = 2) - σ, :auto), header = false)
+            CSV.write("./scripts/"*str_regression*"/scaling/variances/"*str_sampler*str_h*string(h)*str_d*string(d)*".csv", DataFrame((std(trace[:,burnin:end], dims = 2) - σ)./σ, :auto), header = false)
         end
         str_sampler = "bps_" # "sgld2_" "zz_" "bps_" "szz_"
         DIRIN = str_trace*str_sampler*str_h*string(h)*str_d*string(d)*str_csv
         if isfile(DIRIN)
             trace = Matrix(CSV.read(DIRIN, DataFrame; header=false))
-            CSV.write("./scripts/"*str_regression*"/scaling/variances/"*str_sampler*str_h*string(h)*"_"*str_d*string(d)*".csv", DataFrame(std(trace, dims = 2) - σ, :auto), header = false)
+            CSV.write("./scripts/"*str_regression*"/scaling/variances/"*str_sampler*str_h*string(h)*str_d*string(d)*".csv", DataFrame((std(trace[:,burnin:end], dims = 2) - σ)./σ, :auto), header = false)
         end
     end
 end
